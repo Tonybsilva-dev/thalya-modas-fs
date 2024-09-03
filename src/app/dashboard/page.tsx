@@ -1,3 +1,7 @@
-export default function Dashboardpage() {
-  return <h1>Dashboard</h1>
-}
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+};
+
+export { DashboardHomeInterface as default } from "@/subdomains/dashboard/container/dashboard.container";
