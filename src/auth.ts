@@ -1,30 +1,7 @@
+// export const runtime = 'nodejs';
+
 import NextAuth from 'next-auth';
-import Credentials from "next-auth/providers/credentials"
+import { authOptions } from './lib/auth';
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [
-    Credentials({
-      credentials: {
-        email: { label: "Email", type: "email", placeholder: "Email" },
-        password: { label: "Password", type: "email", placeholder: "Email" },
-      },
-      async authorize(credentials) {
 
-        let user = null;
-        // user object.
-
-        // user = {
-        //   id: 1,
-        //   name: "Antonio S",
-        //   email: "contato@antoniobsilva.com.br"
-        // }
-
-        if (!user) {
-          return null
-        }
-
-        return user
-      }
-    })
-  ]
-})
+export const { signIn, signOut, isLoggedIn, auth } = NextAuth(authOptions)
