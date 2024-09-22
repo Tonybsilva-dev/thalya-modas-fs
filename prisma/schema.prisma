@@ -14,18 +14,17 @@ enum AccountType {
 }
 
 model Account {
-  id                String      @id @default(cuid())
-  userId            String      @map("user_id")
-  type              AccountType @default(CUSTOMER)
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
   provider          String
-  providerAccountId String      @map("provider_account_id")
-  refreshToken      String?     @map("refresh_token") @db.Text
-  accessToken       String?     @map("access_token") @db.Text
-  expiresAt         Int?        @map("expires_at")
-  tokenType         String?     @map("token_type")
+  providerAccountId String  @map("provider_account_id")
+  refreshToken      String? @map("refresh_token") @db.Text
+  accessToken       String? @map("access_token") @db.Text
+  expiresAt         Int?    @map("expires_at")
+  tokenType         String? @map("token_type")
   scope             String?
-  idToken           String?     @map("id_token") @db.Text
-  sessionState      String?     @map("session_state")
+  idToken           String? @map("id_token") @db.Text
+  sessionState      String? @map("session_state")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -38,15 +37,16 @@ model Account {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String      @id @default(cuid())
   name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  password      String
+  email         String?     @unique
+  emailVerified DateTime?   @map("email_verified")
+  password      String?
   image         String?
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  role          AccountType @default(CUSTOMER)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  deletedAt     DateTime?   @map("deleted_at")
 
   Address  Address[]
   accounts Account[]
