@@ -14,11 +14,12 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/shared/helpers/format-date";
 import ErrorMessage from "@/components/ui/error-message";
+import Image from "next/image";
 
 const signUpSchema = z.object({
   name: z.string({ required_error: "Campo obrigatório" }).min(1, { message: "Campo obrigatório" }),
-  email: z.string().email({ message: "Email inválido" }),
-  password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres" }),
+  email: z.string({ required_error: "Campo obrigatório" }).email({ message: "Email inválido" }),
+  password: z.string({ required_error: "Campo obrigatório" }).min(6, { message: "A senha deve ter pelo menos 6 caracteres" }),
 });
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
@@ -34,32 +35,45 @@ export const SignUnPageInterface = () => {
     formState: { errors },
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      name: "",
+      password: "",
+      email: "",
+    }
   });
 
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     try {
       await createUser({
+        name: data.name,
         email: data.email,
         password: data.password
       });
 
       toast.success("Usuário criado com sucesso.", {
         description: formatDate(new Date),
-        action: {
-          label: 'Acessar',
-          onClick: () => router.push("/")
-        },
       })
 
       router.push("/")
     } catch (error) {
+      // Tratamento de erro do Zod
       if (error instanceof z.ZodError) {
-        const formattedErrors = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        const formattedErrors = error.errors
+          .map((e) => `${e.path.join(".")}: ${e.message}`)
+          .join(", ");
 
-        toast.warning(formattedErrors);
-      } else {
+        toast.warning(`Erros de validação: ${formattedErrors}`);
+      }
+      // Tratamento de erro de e-mail duplicado ou outros erros
+      else if (error instanceof Error) {
+        toast.error(error.message, {
+          description: formatDate(new Date()),
+        });
+      }
+      // Tratamento de outros tipos de erro
+      else {
         toast.error("Ocorreu um erro inesperado.", {
-          description: formatDate(new Date),
+          description: formatDate(new Date()),
         });
       }
     }
@@ -116,7 +130,7 @@ export const SignUnPageInterface = () => {
         </form>
       </div>
       <div className="hidden bg-muted lg:block">
-        <img
+        <Image
           src="/signin-background.webp"
           alt="Image"
           width="1920"
