@@ -39,9 +39,9 @@ export const createUser = async (input: any) => {
         email: userData.email,
         password: hashPassword,
         image: userData.image,
+        role: userData.accountType || "CUSTOMER",
         accounts: {
           create: {
-            type: userData.accountType || "CUSTOMER",
             provider: "credentials",
             providerAccountId: userData.email,
           },

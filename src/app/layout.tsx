@@ -21,14 +21,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <AuthProvider>
-        <body className={inter.className}>
+      <body className={inter.className}>
+        <AuthProvider>
           <main>
             {children}
           </main>
           <Toaster position="top-right" richColors />
-        </body>
-      </AuthProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }
