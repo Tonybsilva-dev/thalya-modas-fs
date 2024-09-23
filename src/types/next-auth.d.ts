@@ -7,6 +7,7 @@ declare module "next-auth" {
   interface User {
     id: string
     role: string
+    isPremium?: boolean
   }
   interface Session {
     user: User
@@ -17,5 +18,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string
     role: string
+    isPremium?: boolean
   }
 }
