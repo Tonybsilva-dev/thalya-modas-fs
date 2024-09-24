@@ -1,3 +1,5 @@
+'use client'
+
 import Link from "next/link"
 import { Switch } from "@/components/ui/switch"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
@@ -5,8 +7,13 @@ import { Button } from "@/components/ui/button"
 import { TitlePage } from "@/components/ui/title-page"
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import { useSession } from "next-auth/react"
 
 export const SettingsInterface = () => {
+
+  const { data: session } = useSession()
+
+
   return (
     <>
       <div className="mb-4">
@@ -34,7 +41,7 @@ export const SettingsInterface = () => {
                   <h3 className="text-base font-medium">Email</h3>
                   <p className="text-muted-foreground">Altere o endereço de e-mail associado à sua conta.</p>
                   <div className="flex items-center justify-between">
-                    <span>john@example.com</span>
+                    <span>{session?.user.email}</span>
                     <Link
                       href="#"
                       className="inline-flex items-center gap-1.5 text-primary hover:underline"
