@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { TitlePage } from "@/components/ui/title-page"
-import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronDownIcon, ChevronRightIcon, StoreIcon } from "lucide-react"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { useSession } from "next-auth/react"
 
@@ -31,7 +31,14 @@ export const SettingsInterface = () => {
       </div>
 
       <div className="flex flex-col min-h-screen bg-background text-foreground">
-        <TitlePage title="Configurações" />
+        <TitlePage title="Configurações" >
+          <Link href={'/dashboard/settings/my-store'}>
+            <Button className="flex gap-2">
+              < StoreIcon className="h-5 w-5" />
+              Minha loja
+            </Button>
+          </Link>
+        </TitlePage>
         <main className="flex-1 py-8">
           <div className="container grid gap-8 px-4 md:px-6">
             <section>
@@ -158,7 +165,7 @@ export const SettingsInterface = () => {
             </section>
           </div>
         </main>
-      </div>
+      </div >
     </>
   )
 }
