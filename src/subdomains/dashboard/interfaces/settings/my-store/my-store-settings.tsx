@@ -1,12 +1,14 @@
-import { Button } from "@/components/ui/button"
-import { TitlePage } from "@/components/ui/title-page"
-import { SaveIcon } from "lucide-react"
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+// app/dashboard/settings/page.tsx
+import dynamic from 'next/dynamic';
 import { getStoreInfo } from "./actions/get-store-info.action"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { notFound } from "next/navigation"
-import StoreForm from "./components/storeForm.component"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import { Suspense } from 'react';
+import { Spinner } from '@/components/ui/spinner';
+
+const StoreSettings = dynamic(() => import('./components/storeSettings.component'), { ssr: false, suspense: true });
 
 export const MyStoreSettingsInterface = async () => {
   const session = await getServerSession(authOptions);
@@ -15,7 +17,7 @@ export const MyStoreSettingsInterface = async () => {
     return notFound()
   }
 
-  const userId = session?.user.id
+  const userId = session.user.id
   const stores = await getStoreInfo(userId)
 
   return (
@@ -38,18 +40,10 @@ export const MyStoreSettingsInterface = async () => {
         </Breadcrumb>
       </div>
 
-      <div className="flex flex-col min-h-screen bg-background text-foreground">
-        <TitlePage title="Minha loja" >
-          <Button className="flex gap-2">
-            <SaveIcon className="h-5 w-5" />
-            Salvar alterações
-          </Button>
-        </TitlePage>
-        <main className="flex-1 py-8">
-          <div className="container grid gap-8 px-4 md:px-6">
-            <StoreForm initialData={stores} />
-          </div>
-        </main>
+      <div className="flex-col min-h-screen bg-background text-foreground">
+        <Suspense fallback={<Spinner />}>
+          <StoreSettings initialData={stores} />
+        </Suspense>
       </div >
     </>
   )

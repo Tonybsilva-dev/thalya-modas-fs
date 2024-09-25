@@ -24,7 +24,7 @@ export const SettingsInterface = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage >Configurações</BreadcrumbPage>
+              <BreadcrumbPage>Configurações</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
