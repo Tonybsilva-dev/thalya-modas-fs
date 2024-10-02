@@ -14,18 +14,17 @@ enum AccountType {
 }
 
 model Account {
-  id                String      @id @default(cuid())
-  userId            String      @map("user_id")
-  type              AccountType @default(CUSTOMER)
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
   provider          String
-  providerAccountId String      @map("provider_account_id")
-  refreshToken      String?     @map("refresh_token") @db.Text
-  accessToken       String?     @map("access_token") @db.Text
-  expiresAt         Int?        @map("expires_at")
-  tokenType         String?     @map("token_type")
+  providerAccountId String  @map("provider_account_id")
+  refreshToken      String? @map("refresh_token") @db.Text
+  accessToken       String? @map("access_token") @db.Text
+  expiresAt         Int?    @map("expires_at")
+  tokenType         String? @map("token_type")
   scope             String?
-  idToken           String?     @map("id_token") @db.Text
-  sessionState      String?     @map("session_state")
+  idToken           String? @map("id_token") @db.Text
+  sessionState      String? @map("session_state")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -38,45 +37,58 @@ model Account {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String      @id @default(cuid())
   name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  password      String
+  email         String?     @unique
+  emailVerified DateTime?   @map("email_verified")
+  password      String?
   image         String?
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  role          AccountType @default(CUSTOMER)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  deletedAt     DateTime?   @map("deleted_at")
 
   Address  Address[]
   accounts Account[]
   sessions Session[]
+  Store    Store[]
 
   @@map("users")
 }
 
 model Address {
-  id        String    @id @default(cuid())
-  street    String
-  suite     String
-  city      String
-  zipcode   String    @map("zipcode")
-  geoId     String    @unique @map("geo_id")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id           String    @id @default(cuid())
+  street       String
+  suite        String?
+  city         String
+  zipcode      String    @map("zipcode")
+  neighborhood String?
+  uf           String?
+  state        String?
+  region       String?
+  contactId    String    @unique @map("contact_id")
+  geoId        String    @unique @map("geo_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
-  geo    Geo     @relation(fields: [geoId], references: [id])
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String? @map("user_id")
+  geo     Geo     @relation(fields: [geoId], references: [id])
+  contact Contact @relation(fields: [contactId], references: [id])
+  user    User?   @relation(fields: [userId], references: [id])
+  userId  String? @map("user_id")
+
+  customer Customer[]
+  store    Store?
+  storeId  String?    @unique @map("store_id")
 
   @@map("address")
 }
 
 model Geo {
   id        String    @id @default(cuid())
-  lat       Float
-  lng       Float
+  lat       Float?
+  lng       Float?
+  ibge      Int
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -84,6 +96,13 @@ model Geo {
   address Address?
 
   @@map("geo")
+}
+
+model Contact {
+  id           String    @id @default(cuid())
+  phoneNumber  String?
+  emailContact String?
+  Address      Address[]
 }
 
 model Session {
@@ -110,4 +129,132 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+model Store {
+  id          String    @id @default(cuid())
+  name        String
+  thumbnail   String?
+  description String?
+  ownerId     String    @unique @map("owner_id")
+  addressId   String?   @unique @map("address_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  address      Address?     @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  customers    Customer[]
+  categories   Category[]
+  products     Product[]
+  promissories Promissory[]
+
+  @@map("stores")
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  name      String
+  email     String?   @unique
+  phone     String?
+  document  String?   @unique
+  storeId   String    @map("store_id")
+  addressId String?   @map("adress_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  store        Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  promissories Promissory[]
+  adresses     Address?     @relation(fields: [addressId], references: [id])
+
+  @@map("customers")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  storeId     String    @map("store_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  categoryId  String    @map("category_id")
+  storeId     String    @map("store_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  category  Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  store     Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  purchases Purchase[]
+
+  @@map("products")
+}
+
+model Promissory {
+  id          String           @id @default(cuid())
+  clientId    String           @map("client_id")
+  storeId     String           @map("store_id")
+  totalAmount Float
+  dueDate     DateTime
+  status      PromissoryStatus @default(PENDING)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  deletedAt   DateTime?        @map("deleted_at")
+
+  customer  Customer   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  store     Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  purchases Purchase[]
+  payments  Payment[]
+
+  @@map("promissories")
+}
+
+enum PromissoryStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
+
+model Purchase {
+  id           String    @id @default(cuid())
+  promissoryId String    @map("promissory_id")
+  productId    String    @map("product_id")
+  quantity     Int
+  price        Float
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  promissory Promissory @relation(fields: [promissoryId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("purchases")
+}
+
+model Payment {
+  id           String    @id @default(cuid())
+  promissoryId String    @map("promissory_id")
+  amount       Float
+  paymentDate  DateTime  @map("payment_date")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  promissory Promissory @relation(fields: [promissoryId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
 }
