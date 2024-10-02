@@ -198,7 +198,7 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
   }));
 
   return (
-    <form id="store-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form id="store-form" onSubmit={handleSubmit(onSubmit)} className="container space-y-6">
       {/* {JSON.stringify(errors)} */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
         <section className='space-y-2'>
