@@ -1,6 +1,17 @@
 import { withSentryConfig } from '@sentry/nextjs';
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+        port: '',
+        pathname: '/**/**',
+      },
+    ]
+  }
+};
 
 export default withSentryConfig(nextConfig, {
   // For all available options, see:

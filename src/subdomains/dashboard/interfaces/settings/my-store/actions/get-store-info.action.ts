@@ -10,7 +10,13 @@ export async function getStoreInfo(userId: string): Promise<StoreFormData | null
       customers: true,
       promissories: true,
       categories: true,
-      products: true
+      products: true,
+      address: {
+        include: {
+          geo: true,
+          contact: true,
+        }
+      },
     }
   });
 
@@ -20,11 +26,15 @@ export async function getStoreInfo(userId: string): Promise<StoreFormData | null
     ownerId: store.ownerId,
     name: store.name,
     description: store.description || "",
-    street: store.street,
-    suite: store.suite || "",
-    city: store.city,
-    zipcode: store.zipcode,
-    lat: store.lat,
-    lng: store.lng,
+    street: store.address?.street || "",
+    suite: store.address?.suite || "",
+    city: store.address?.city || "",
+    uf: store.address?.uf || "",
+    zipcode: store.address?.zipcode || "",
+    lat: store.address?.geo.lat || 0,
+    lng: store.address?.geo.lng || 0,
+    ibge: store.address?.geo.ibge || 0,
+    storeMail: store.address?.contact.emailContact || "",
+    storePhone: store.address?.contact.phoneNumber || ""
   };
 }

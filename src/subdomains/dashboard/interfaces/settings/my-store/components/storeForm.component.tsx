@@ -1,5 +1,3 @@
-// app/dashboard/settings/components/StoreForm.tsx
-
 'use client';
 
 import React, { useEffect, forwardRef, useImperativeHandle, useRef, useState } from 'react';
@@ -15,6 +13,9 @@ import { z } from 'zod';
 import ErrorMessage from '@/components/ui/error-message';
 import { useSession } from 'next-auth/react';
 import { Spinner } from '@/components/ui/spinner';
+import HelperMessage from '@/components/ui/helper-message';
+import { Button } from '@/components/ui/button';
+import UfSelect from '@/components/ui/uf-select';
 
 interface StoreFormProps {
   initialData: StoreFormData | null;
@@ -26,7 +27,6 @@ export interface StoreFormHandle {
 
 const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, ref) => {
   const { data: session } = useSession();
-
   const {
     watch,
     register,
@@ -44,6 +44,9 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
       suite: "",
       city: "",
       zipcode: "",
+      storeMail: "",
+      storePhone: "",
+      ibge: 0,
       lat: 0,
       lng: 0,
     },
@@ -51,28 +54,37 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
 
   const [isLoading, setIsLoading] = useState(false);
   const zipcode = watch('zipcode');
+  const uf = watch('uf');
 
-  const [debouncedZipcode] = useDebounce(zipcode, 500);
+  const [debouncedZipcode] = useDebounce(zipcode, 1000);
   const [cepLookupCompleted, setCepLookupCompleted] = useState(false);
 
   useEffect(() => {
-
-    if (!initialData) {
-      reset({
-        ownerId: session?.user.id || "",
-        name: "",
-        description: "",
-        street: "",
-        suite: "",
-        city: "",
-        zipcode: "",
-        lat: 0,
-        lng: 0,
-      });
+    if (initialData) {
+      reset(initialData);
     }
+  }, [initialData, reset]);
+
+  // useEffect(() => {
+  //   if (!initialData) {
+  //     reset({
+  //       ownerId: session?.user.id || "",
+  //       name: "",
+  //       description: "",
+  //       street: "",
+  //       suite: "",
+  //       city: "",
+  //       zipcode: "",
+  //       storeMail: "",
+  //       storePhone: "",
+  //       ibge: 0,
+  //       lat: 0,
+  //       lng: 0,
+  //     });
+  //   }
 
 
-  }, [initialData, reset, session?.user.id]);
+  // }, [initialData, reset, session?.user.id]);
 
   useEffect(() => {
     if (initialData?.zipcode !== debouncedZipcode && !cepLookupCompleted) {
@@ -88,11 +100,12 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
   }, [debouncedZipcode, initialData?.zipcode, cepLookupCompleted]);
 
   const handleCepLookup = async (cep: string) => {
+
     setIsLoading(true);
     setCepLookupCompleted(false);
+
     try {
       const response = await fetch(`/api/utils/cep?cep=${cep}`);
-      console.log(response)
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Erro ao buscar o CEP.');
@@ -101,14 +114,17 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
       const result = await response.json();
 
       if (result.data) {
-        const { street, suite, city, zipcode, lat, lng } = result.data;
+        const { street, suite, city, zipcode, lat, lng, ibge, district, uf } = result.data;
 
-        setValue('street', street || '');
-        setValue('suite', suite || '');
-        setValue('city', city || '');
-        setValue('zipcode', zipcode || '');
+        setValue('street', street);
+        setValue('suite', suite);
+        setValue('city', city);
+        setValue('zipcode', zipcode);
         setValue('lat', lat);
         setValue('lng', lng);
+        setValue('ibge', ibge)
+        setValue('district', district)
+        setValue('uf', uf)
 
         toast.success('CEP encontrado e campos preenchidos automaticamente.');
       } else if (result.error) {
@@ -122,6 +138,8 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
   };
 
   const onSubmit = async (data: StoreFormData) => {
+
+    setIsLoading(true);
     try {
       const response = await fetch('/api/store/upsert', {
         method: 'POST',
@@ -133,14 +151,17 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
 
       if (!response.ok) {
         const errorData = await response.json();
+
         if (errorData.errors) {
           const formattedErrors = errorData.errors
             .map((e: any) => `${e.path.join(".")}: ${e.message}`)
             .join(", ");
           toast.warning(`Erros de validação: ${formattedErrors}`);
         } else {
+          toast.error(errorData.message)
           throw new Error(errorData.message || 'Erro desconhecido');
         }
+        toast.success('Dados atualizados com sucesso!')
         return;
       }
 
@@ -149,7 +170,6 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
         description: formatDate(new Date()),
       });
 
-
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         const formattedErrors = error.errors
@@ -157,17 +177,17 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
           .join(", ");
 
         toast.warning(`Erros de validação: ${formattedErrors}`);
-      }
-      else if (error instanceof Error) {
+      } else if (error instanceof Error) {
         toast.error(error.message, {
           description: formatDate(new Date()),
         });
-      }
-      else {
+      } else {
         toast.error("Ocorreu um erro inesperado.", {
           description: formatDate(new Date()),
         });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -179,75 +199,123 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
 
   return (
     <form id="store-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-1 space-y-2">
-        <div className='space-y-2'>
-          <label className="block text-sm font-medium">Nome da Loja</label>
-          <Input
-            {...register('name')}
-            type="text"
-            placeholder="Nome da Loja"
-            disabled={isLoading}
-          />
-          <ErrorMessage error={errors.name} />
-        </div>
-        <div className='space-y-2'>
-          <label className="block text-sm font-medium">Descrição</label>
-          <Textarea
-            {...register('description')}
-            placeholder="Descrição da Loja"
-            disabled={isLoading}
-          />
-          <ErrorMessage error={errors.description} />
-        </div>
-        {isLoading ? <Spinner /> : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 space-y-2">
-            <div className='space-y-2 mt-2'>
-              <label className="block text-sm font-medium">Rua</label>
-              <Input
-                {...register('street')}
-                type="text"
-                placeholder="Rua"
-                disabled={isLoading}
-              />
-              <ErrorMessage error={errors.street} />
-            </div>
-            <div className='space-y-2'>
-              <label className="block text-sm font-medium">Apartamento/Suite</label>
-              <Input
-                {...register('suite')}
-                type="text"
-                placeholder="Apartamento/Suite"
-                disabled={isLoading}
-              />
-              <ErrorMessage error={errors.suite} />
-            </div>
-            <div className='space-y-2'>
-              <label className="block text-sm font-medium">Cidade</label>
-              <Input
-                {...register('city')}
-                type="text"
-                placeholder="Cidade"
-                disabled={isLoading}
-              />
-              <ErrorMessage error={errors.city} />
-            </div>
-            <div className='space-y-2'>
-              <div className='flex flex-1 justify-between'>
-                <label className="block text-sm font-medium">CEP</label>
-                <label className="block text-sm font-small">Informe o CEP para obter os dados.</label>
-
+      {/* {JSON.stringify(errors)} */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
+        <section className='space-y-2'>
+          <h2 className="text-lg font-semibold mb-4">Dados da loja</h2>
+          <div className='space-y-2'>
+            <label className="block text-sm font-medium">Nome da Loja</label>
+            <Input
+              {...register('name')}
+              type="text"
+              placeholder="Nome da Loja"
+              disabled={isLoading}
+            />
+            <ErrorMessage error={errors.name} />
+          </div>
+          <div className='space-y-2'>
+            <label className="block text-sm font-medium">Descrição</label>
+            <Textarea
+              {...register('description')}
+              placeholder="Descrição da Loja"
+              disabled={isLoading}
+            />
+            <ErrorMessage error={errors.description} />
+          </div>
+        </section>
+        <section className='space-y-2'>
+          <h2 className="text-lg font-semibold mb-4">Endereço</h2>
+          {isLoading ? <Spinner /> : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className='space-y-2'>
+                <label className="block text-sm font-medium">Rua</label>
+                <Input
+                  {...register('street')}
+                  type="text"
+                  placeholder="Rua"
+                  disabled={isLoading}
+                />
+                <ErrorMessage error={errors.street} />
               </div>
+              <div className='space-y-2'>
+                <label className="block text-sm font-medium">Complemento</label>
+                <Input
+                  {...register('suite')}
+                  type="text"
+                  placeholder="Ex: N 66, Apto. 102"
+                  disabled={isLoading}
+                />
+                <ErrorMessage error={errors.suite} />
+              </div>
+              <div className='space-y-2'>
+                <label className="block text-sm font-medium">Cidade</label>
+                <Input
+                  {...register('city')}
+                  type="text"
+                  placeholder="Cidade"
+                  disabled={isLoading}
+                />
+                <ErrorMessage error={errors.city} />
+              </div>
+              <div className='space-y-2'>
+                <div className='flex flex-1 justify-between'>
+                  <label className="block text-sm font-medium">CEP</label>
+                  <HelperMessage message='Informe o CEP para obter os dados.' />
+                </div>
+                <Input
+                  {...register('zipcode')}
+                  type="text"
+                  placeholder="CEP"
+                  disabled={isLoading}
+                />
+                <ErrorMessage error={errors.zipcode} />
+              </div>
+              <div className='space-y-2'>
+                <label className="block text-sm font-medium">Bairro</label>
+                <Input
+                  {...register('district')}
+                  type="text"
+                  placeholder="Bairro"
+                  disabled={isLoading}
+                />
+                <ErrorMessage error={errors.district} />
+              </div>
+              <div className='space-y-2'>
+                <label className="block text-sm font-medium">Estado</label>
+                <UfSelect initialUF={uf} />
+              </div>
+            </div>
+          )}
+        </section>
+        <section>
+          <h2 className="text-lg font-semibold mb-4">Contato</h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+            <div className='space-y-2'>
+              <label className="block text-sm font-medium">Telefone Comercial</label>
               <Input
-                {...register('zipcode')}
+                {...register('storePhone')}
                 type="text"
-                placeholder="CEP"
+                placeholder="Telefone/Celular"
                 disabled={isLoading}
               />
-              <ErrorMessage error={errors.zipcode} />
+              <ErrorMessage error={errors.storePhone} />
+            </div>
+            <div className='space-y-2'>
+              <label className="block text-sm font-medium">Email Comercial</label>
+              <Input
+                {...register('storeMail')}
+                type="text"
+                placeholder="Email"
+                disabled={isLoading}
+              />
+              <ErrorMessage error={errors.storeMail} />
             </div>
           </div>
-        )}
+
+        </section>
       </div>
+      <Button type='submit' disabled={isLoading}>ENVIAR</Button>
     </form>
   );
 });

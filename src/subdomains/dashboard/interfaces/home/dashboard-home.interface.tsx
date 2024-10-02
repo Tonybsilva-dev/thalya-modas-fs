@@ -1,13 +1,13 @@
 'use client'
 
 import { useSession } from "next-auth/react";
+import { notFound } from "next/navigation";
 
 export const DashboardHomeInterface = () => {
   const { data: session } = useSession();
 
-  if (session) {
-    console.log('User ID:', session.user.id);
-    console.log('User Role:', session.user.role);
+  if (!session) {
+    return notFound()
     // Include 'type' if you store it in the session
   }
 

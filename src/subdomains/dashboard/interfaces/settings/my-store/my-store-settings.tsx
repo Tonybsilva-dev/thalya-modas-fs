@@ -1,4 +1,3 @@
-// app/dashboard/settings/page.tsx
 import dynamic from 'next/dynamic';
 import { getStoreInfo } from "./actions/get-store-info.action"
 import { getServerSession } from "next-auth"
