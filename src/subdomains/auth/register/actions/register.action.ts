@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { hash } from "bcryptjs"
-import { getUserByEmail } from "@/shared/_actions/get-user-by-email";
+import { getUserByEmail } from "@/shared/actions/get-user-by-email";
 import { db } from "@/lib/prisma";
 
 const createUserSchema = z.object({

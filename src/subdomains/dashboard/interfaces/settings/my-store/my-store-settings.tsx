@@ -16,8 +16,8 @@ export const MyStoreSettingsInterface = async () => {
     return notFound()
   }
 
-  const userId = session.user.id
-  const stores = await getStoreInfo(userId)
+  const USER_ID = session.user.id
+  const STORES = await getStoreInfo({ ownerId: USER_ID })
 
   return (
     <>
@@ -41,7 +41,7 @@ export const MyStoreSettingsInterface = async () => {
 
       <div className="flex-col min-h-screen bg-background text-foreground">
         <Suspense fallback={<Spinner />}>
-          <StoreSettings initialData={stores} />
+          <StoreSettings initialData={STORES} />
         </Suspense>
       </div >
     </>

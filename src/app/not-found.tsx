@@ -2,9 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { TriangleAlertIcon } from "lucide-react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-
 
 export default function Custom404() {
   const router = useRouter()

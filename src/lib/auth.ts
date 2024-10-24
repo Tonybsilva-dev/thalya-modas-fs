@@ -5,7 +5,7 @@ import { signInSchema } from '../lib/zod';
 import { Adapter } from "next-auth/adapters";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from '../lib/prisma';
-import { verifyPassword } from '../shared/helpers/crypto';
+import { verifyPassword } from './utils/crypto';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db) as Adapter,
@@ -37,6 +37,9 @@ export const authOptions: NextAuthOptions = {
 
         const user = await db.user.findUnique({
           where: { email: parsedCredentials.data.email },
+          include: {
+            Store: true
+          }
         });
 
         if (!user) {
@@ -88,26 +91,66 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async jwt({ token, user, trigger, session }) {
+      // Initial sign-in
       if (user) {
-        token.id = user.id as string;
-        token.role = user.role as string;
-      } else if (!token.role) {
-        const dbUser = await db.user.findUnique({
-          where: { id: token.id },
-          select: { role: true },
-        });
-        token.role = dbUser?.role || 'CUSTOMER';
+        token.id = user.id;
+        token.role = user.role;
+
+        // If the user is an OWNER, fetch their store
+        if (user.role === "OWNER") {
+          const ownerStore = await db.store.findUnique({
+            where: {
+              ownerId: user.id,
+            },
+            select: {
+              id: true,
+            },
+          });
+
+          if (ownerStore) {
+            token.storeId = ownerStore.id;
+          } else {
+            token.storeId = undefined; // No store registered yet
+          }
+        }
+      } else {
+        // Subsequent requests
+        // Ensure token has necessary properties
+        if (!token.role || !token.id) {
+          const dbUser = await db.user.findUnique({
+            where: { id: token.id },
+            select: { role: true },
+          });
+          token.role = dbUser?.role || 'CUSTOMER';
+        }
+
+        // If token indicates user is an OWNER but storeId is missing
+        if (token.role === "OWNER" && !token.storeId) {
+          const ownerStore = await db.store.findUnique({
+            where: {
+              ownerId: token.id,
+            },
+            select: {
+              id: true,
+            },
+          });
+
+          if (ownerStore) {
+            token.storeId = ownerStore.id;
+          } else {
+            token.storeId = undefined;
+          }
+        }
       }
 
-      if (trigger === "update" && session) {
-        token = { ...token, ...session };
-      }
       return token;
     },
+
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.storeId = token.storeId
       }
       return session;
     }

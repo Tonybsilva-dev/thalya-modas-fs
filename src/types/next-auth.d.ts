@@ -8,6 +8,7 @@ declare module "next-auth" {
     id: string
     role: string
     isPremium?: boolean
+    storeId?: string
   }
   interface Session {
     user: User
@@ -19,5 +20,6 @@ declare module "next-auth/jwt" {
     id: string
     role: string
     isPremium?: boolean
+    storeId?: string
   }
 }

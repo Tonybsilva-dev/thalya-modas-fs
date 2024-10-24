@@ -3,7 +3,7 @@
 import * as React from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
-import { stateBrazil } from '@/shared/helpers/state-brazil';
+import { stateBrazil } from '@/lib/utils/state-brazil';
 import Image from 'next/image';
 
 const UfSelect = ({ initialUF }: { initialUF?: string }) => {
@@ -50,9 +50,16 @@ const UfSelect = ({ initialUF }: { initialUF?: string }) => {
         <ChevronDown className="ml-2" />
       </SelectPrimitive.Trigger>
 
-      <SelectPrimitive.Content>
+      <SelectPrimitive.Content
+        side="bottom"
+        align="start"
+        sideOffset={50}
+        style={{ zIndex: 9999 }}
+      >
         <SelectPrimitive.ScrollUpButton />
-        <SelectPrimitive.Viewport className="border rounded-md shadow-md bg-white p-2">
+        <SelectPrimitive.Viewport
+          style={{ maxHeight: '300px', overflowY: 'auto' }}
+          className="border rounded-md shadow-md bg-white p-2">
           {/* Campo de busca */}
           <input
             type="text"

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { StoreFormData, storeSchema } from '../validations/get-store-info.validation';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { formatDate } from '@/shared/helpers/format-date';
+import { formatDate } from '@/lib/utils/format-date';
 import { z } from 'zod';
 import ErrorMessage from '@/components/ui/error-message';
 import { useSession } from 'next-auth/react';
@@ -199,7 +199,6 @@ const StoreForm = forwardRef<StoreFormHandle, StoreFormProps>(({ initialData }, 
 
   return (
     <form id="store-form" onSubmit={handleSubmit(onSubmit)} className="container space-y-6">
-      {/* {JSON.stringify(errors)} */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
         <section className='space-y-2'>
           <h2 className="text-lg font-semibold mb-4">Dados da loja</h2>

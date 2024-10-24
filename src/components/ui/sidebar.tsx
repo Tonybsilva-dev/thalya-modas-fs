@@ -1,7 +1,6 @@
-
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,55 +11,12 @@ import {
   GitlabIcon,
   StoreIcon,
   ChevronRightIcon,
-  UsersIcon,
-  PackageSearchIcon,
-  LayoutDashboardIcon,
-  SettingsIcon,
+  LightbulbIcon,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-
-export interface SidebarLinks {
-  href?: string;
-  prefetch: boolean;
-  text: string;
-  icon: React.ElementType;
-  children?: SidebarLinks[];
-}
-
-const initialSidebarLinks: SidebarLinks[] = [
-  {
-    href: '/dashboard',
-    prefetch: false,
-    text: 'Início',
-    icon: LayoutDashboardIcon,
-  },
-  {
-    href: '/dashboard/customers',
-    prefetch: false,
-    text: 'Clientes',
-    icon: UsersIcon,
-  },
-  {
-    prefetch: false,
-    text: 'Produtos',
-    icon: PackageSearchIcon,
-    children: [
-      {
-        href: '/dashboard/products/reports',
-        prefetch: false,
-        text: 'Reports',
-        icon: StoreIcon,
-      },
-    ],
-  },
-  {
-    href: '/dashboard/settings',
-    prefetch: false,
-    text: 'Configurações',
-    icon: SettingsIcon,
-  },
-];
+import { LinksPropsSidebar } from '@/shared/types/dashboard/sidebar.type';
+import { SidebarLinks } from '@/lib/utils/sidebar-links';
 
 const renderLinks = (links: SidebarLinks[]) => {
   return links.map((link, index) => {
@@ -98,43 +54,60 @@ const renderLinks = (links: SidebarLinks[]) => {
   });
 };
 
-export default function DashboardSidebar() {
+export default function DashboardSidebar({ links }: LinksPropsSidebar) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
-    <aside className="fixed inset-y-0 left-0 z-10 flex h-full w-64 flex-col border-r bg-background shadow-lg">
-      {/* Cabeçalho */}
-      <div className="flex h-16 shrink-0 items-center justify-between px-4">
-        <Link href="#" className="flex items-center gap-2" prefetch={false}>
-          <StoreIcon className="h-6 w-6" />
-          <span className="text-lg font-semibold">Thalya Modas</span>
-        </Link>
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <MenuIcon className="h-5 w-5" />
-          <span className="sr-only">Toggle menu</span>
-        </Button>
-      </div>
-      <nav className="flex-1 overflow-auto mt-4 px-2">
-        {renderLinks(initialSidebarLinks)}
-        <div className="mt-auto p-4">
-          <Button onClick={() => signOut()} className="flex w-full gap-2">
-            <LogOutIcon className="w-5 h-5" />
-            Sair
+    <>
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-10 h-full w-64 flex-col border-r bg-background shadow-lg">
+        <div className="flex h-16 shrink-0 items-center justify-between px-4">
+          <Link href="#" className="flex items-center gap-2" prefetch={false}>
+            <StoreIcon className="h-6 w-6" />
+            <span className="text-lg font-semibold">Thalya Modas</span>
+          </Link>
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <LightbulbIcon className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
           </Button>
         </div>
-      </nav>
-      <div className="flex h-16 shrink-0 items-center justify-center gap-4 border-t px-4">
-        <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
-          <TwitterIcon className="h-5 w-5" />
-          <span className="sr-only">Twitter</span>
-        </Link>
-        <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
-          <LinkedinIcon className="h-5 w-5" />
-          <span className="sr-only">LinkedIn</span>
-        </Link>
-        <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
-          <GitlabIcon className="h-5 w-5" />
-          <span className="sr-only">GitHub</span>
-        </Link>
+        <nav className="flex-1 overflow-auto mt-4 px-2">
+          {renderLinks(links)}
+          <div className="mt-auto p-4">
+            <Button onClick={() => signOut()} className="flex w-full gap-2">
+              <LogOutIcon className="w-5 h-5" />
+              Sair
+            </Button>
+          </div>
+        </nav>
+        <div className="flex h-16 shrink-0 items-center justify-center gap-4 border-t px-4">
+          <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
+            <TwitterIcon className="h-5 w-5" />
+            <span className="sr-only">Twitter</span>
+          </Link>
+          <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
+            <LinkedinIcon className="h-5 w-5" />
+            <span className="sr-only">LinkedIn</span>
+          </Link>
+          <Link href="#" className="text-muted-foreground hover:text-foreground" prefetch={false}>
+            <GitlabIcon className="h-5 w-5" />
+            <span className="sr-only">GitHub</span>
+          </Link>
+        </div>
+      </aside>
+
+      {/* Botão flutuante para telas menores que lg */}
+      <div className="lg:hidden fixed bottom-4 right-4">
+        <Button
+          onClick={toggleSidebar}
+          className="p-4 rounded-full shadow-lg bg-primary text-white"
+        >
+          <MenuIcon className="h-6 w-6" />
+        </Button>
       </div>
-    </aside>
+    </>
   );
 }

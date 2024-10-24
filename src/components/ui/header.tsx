@@ -3,7 +3,7 @@ import { StoreIcon } from "lucide-react"
 
 export default function DashboardHeader() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background">
+    <header className="sticky top-0 z-40 w-full border-b bg-transparent backdrop-blur">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-4">
           <Select>

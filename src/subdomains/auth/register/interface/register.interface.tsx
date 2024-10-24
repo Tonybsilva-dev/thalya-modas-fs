@@ -12,7 +12,7 @@ import { z } from "zod";
 import { createUser } from "../actions/register.action";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { formatDate } from "@/shared/helpers/format-date";
+import { formatDate } from "@/lib/utils/format-date";
 import ErrorMessage from "@/components/ui/error-message";
 import Image from "next/image";
 

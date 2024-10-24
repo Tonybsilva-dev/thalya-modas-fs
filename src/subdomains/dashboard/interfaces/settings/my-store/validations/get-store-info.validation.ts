@@ -1,9 +1,5 @@
 import { z } from 'zod';
 
-export const getStoreSchema = z.object({
-  ownerId: z.string().cuid("ID de usuário inválido"),
-});
-
 export const storeSchema = z.object({
   ownerId: z.string().cuid("ID de usuário inválido"),
   name: z.string().min(1, "O nome da loja é obrigatório"),

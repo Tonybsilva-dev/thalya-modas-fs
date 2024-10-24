@@ -57,6 +57,7 @@ export async function POST(request: Request) {
           connect: { id: store.id },
         },
         street: validatedData.street,
+        neighborhood: validatedData.district,
         suite: validatedData.suite ?? '',
         city: validatedData.city,
         zipcode: validatedData.zipcode,

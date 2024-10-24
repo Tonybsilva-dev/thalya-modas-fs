@@ -8,6 +8,7 @@ import { TitlePage } from "@/components/ui/title-page"
 import { ChevronDownIcon, ChevronRightIcon, StoreIcon } from "lucide-react"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { useSession } from "next-auth/react"
+import { LocationSwitch } from "./my-store/components/switch-location.component"
 
 export const SettingsInterface = () => {
 
@@ -150,7 +151,8 @@ export const SettingsInterface = () => {
                   </p>
                   <div className="flex items-center justify-between">
                     <span>Desativado</span>
-                    <Switch id="location-services" />
+                    <LocationSwitch />
+                    {/* <Switch id="location-services" /> */}
                   </div>
                 </div>
                 <div className="grid gap-2">
