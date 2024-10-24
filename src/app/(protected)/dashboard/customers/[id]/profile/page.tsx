@@ -1,0 +1,1 @@
+export { ProfileCustomerInterface as default } from "@/subdomains/dashboard/interfaces/customers/[id]/profile/profile-customer.interface";
