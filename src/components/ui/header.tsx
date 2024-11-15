@@ -6,7 +6,7 @@ export default function DashboardHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-transparent backdrop-blur">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-4">
-          <Select>
+          {/* <Select>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select Store" />
             </SelectTrigger>
@@ -48,7 +48,7 @@ export default function DashboardHeader() {
                 </div>
               </SelectItem>
             </SelectContent>
-          </Select>
+          </Select> */}
         </div>
       </div>
     </header>

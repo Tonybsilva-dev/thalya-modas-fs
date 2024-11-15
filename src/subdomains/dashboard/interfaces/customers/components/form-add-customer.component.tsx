@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import InputMask from 'react-input-mask';
 import {
   Dialog,
   DialogContent,
@@ -31,7 +30,7 @@ import { PlusIcon } from "lucide-react";
 import { useMediaQuery } from "@/shared/hooks/use-media-query.hook";
 import { createCustomer } from "../actions/add-new-customer";
 import { Prisma } from "@prisma/client";
-import { addCustomerZodSchema, CustomerFormData } from "../validations/add-customer.validation";
+import { addCustomerZodSchema, AddCustomerFormData } from "../validations/add-customer.validation";
 import ErrorMessage from "@/components/ui/error-message";
 
 interface AddCustomerModalProps {
@@ -46,7 +45,7 @@ export default function AddCustomerModal({
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  const { reset, formState, register, handleSubmit } = useForm<CustomerFormData>({
+  const { reset, formState, register, handleSubmit } = useForm<AddCustomerFormData>({
     resolver: zodResolver(addCustomerZodSchema),
     mode: 'onChange',
     defaultValues: {
@@ -56,7 +55,7 @@ export default function AddCustomerModal({
     },
   });
 
-  async function onSubmit(values: CustomerFormData) {
+  async function onSubmit(values: AddCustomerFormData) {
     try {
       const newCustomer = await createCustomer({
         ...values,
@@ -67,7 +66,7 @@ export default function AddCustomerModal({
       reset();
       setOpen(false);
     } catch (error: any) {
-      toast.error(`Failed to add customer: ${error.message}`);
+      toast.error(`${error.message}`);
     }
   }
 

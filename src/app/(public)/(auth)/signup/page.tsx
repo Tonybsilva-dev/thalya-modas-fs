@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Register",
+  title: "Cadastrar",
 };
 
-export { SignUppageContainer as default } from "@/subdomains/auth/register/container/register.container";
+export { SignUppageContainer as default } from "@/subdomains/auth/sign-up/container/register.container";
 

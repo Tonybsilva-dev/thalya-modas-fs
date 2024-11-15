@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { authOptions } from '@/lib/auth';
 import { createId, isCuid } from '@paralleldrive/cuid2';
 import { StoreFormData, storeSchema } from '@/subdomains/dashboard/interfaces/settings/my-store/validations/get-store-info.validation';
+import { storeFormInputSchema } from '@/subdomains/dashboard/interfaces/settings/my-store/validations/store-form-input-schema.validation';
 
 const prisma = new PrismaClient();
 
@@ -21,10 +22,10 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    const validatedData = storeSchema.parse({
+    const validatedData = storeFormInputSchema.parse({
       ...body,
       ownerId: userId,
-    }) as StoreFormData;
+    });;
 
 
     const store = await prisma.store.upsert({
@@ -46,8 +47,9 @@ export async function POST(request: Request) {
         geo: true
       },
       update: {
+        state: validatedData.state,
         street: validatedData.street,
-        suite: validatedData.suite ?? '',
+        suite: validatedData.complement ?? '',
         city: validatedData.city,
         zipcode: validatedData.zipcode,
         uf: validatedData.uf
@@ -57,10 +59,12 @@ export async function POST(request: Request) {
           connect: { id: store.id },
         },
         street: validatedData.street,
-        neighborhood: validatedData.district,
-        suite: validatedData.suite ?? '',
+        neighborhood: validatedData.neighborhood,
+        suite: validatedData.complement ?? '',
         city: validatedData.city,
         zipcode: validatedData.zipcode,
+        uf: validatedData.uf,
+        state: validatedData.state,
         geo: {
           create: {
             lat: validatedData.lat,
@@ -77,7 +81,7 @@ export async function POST(request: Request) {
       },
     })
 
-    const geo = await prisma.geo.upsert({
+    await prisma.geo.upsert({
       where: { id: address.geoId ?? '' },
       update: {
         lat: validatedData.lat,

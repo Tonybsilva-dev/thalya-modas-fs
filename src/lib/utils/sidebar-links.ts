@@ -1,4 +1,4 @@
-import { LayoutDashboardIcon, UsersIcon, PackageSearchIcon, StoreIcon, SettingsIcon } from "lucide-react";
+import { LayoutDashboardIcon, UsersIcon, PackageSearchIcon, StoreIcon, SettingsIcon, DollarSignIcon } from "lucide-react";
 
 export interface SidebarLinks {
   href?: string;
@@ -39,6 +39,12 @@ export const initialSidebarLinks: SidebarLinks[] = [
         icon: StoreIcon,
       },
     ],
+  },
+  {
+    href: '/dashboard/finances',
+    prefetch: false,
+    text: 'Financeiro',
+    icon: DollarSignIcon,
   },
   {
     href: '/dashboard/settings',

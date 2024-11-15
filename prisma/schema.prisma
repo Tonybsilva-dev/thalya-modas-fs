@@ -48,12 +48,28 @@ model User {
   updatedAt     DateTime    @updatedAt @map("updated_at")
   deletedAt     DateTime?   @map("deleted_at")
 
-  Address  Address[]
-  accounts Account[]
-  sessions Session[]
-  Store    Store[]
+  Address     Address[]
+  accounts    Account[]
+  sessions    Session[]
+  Store       Store[]
+  preferences UserPreference[]
 
   @@map("users")
+}
+
+model UserPreference {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  key       String
+  value     String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@map("user_preferences")
 }
 
 model Address {
@@ -103,6 +119,8 @@ model Contact {
   phoneNumber  String?
   emailContact String?
   Address      Address[]
+
+  @@map("contacts")
 }
 
 model Session {

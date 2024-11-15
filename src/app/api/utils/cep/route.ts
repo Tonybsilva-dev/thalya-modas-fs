@@ -67,7 +67,7 @@ export async function GET(request: Request) {
           ibge: fallbackData.ibge || 0,
           gia: fallbackData.gia || 0,
           ddd: fallbackData.ddd || '',
-          siafi: fallbackData.estado || ''
+          siafi: fallbackData.siafi || ''
         };
         return NextResponse.json({ data: standardizedData }, { status: 200 });
       }

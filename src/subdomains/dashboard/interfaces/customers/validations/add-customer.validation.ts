@@ -18,4 +18,4 @@ export const addCustomerZodSchema = z.object({
     .optional(),
 });
 
-export type CustomerFormData = z.infer<typeof addCustomerZodSchema>;
+export type AddCustomerFormData = z.infer<typeof addCustomerZodSchema>;

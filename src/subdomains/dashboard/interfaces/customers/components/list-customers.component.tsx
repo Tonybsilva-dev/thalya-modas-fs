@@ -10,7 +10,6 @@ import { Prisma } from "@prisma/client";
 import EmptyState from "@/components/ui/empty-state";
 import AddCustomerModal from "./form-add-customer.component";
 import { TitlePage } from "@/components/ui/title-page";
-import Image from "next/image";
 
 type Customer = Prisma.CustomerGetPayload<{}>;
 
@@ -44,7 +43,6 @@ export default function ListCustomers({ customers, storeId }: ListCustomersProps
       <TitlePage title="Clientes" />
 
       <main className="flex-1 py-8">
-
         <div className="container flex justify-between items-center mb-4">
           <div className="flex items-center space-x-2">
             <Input

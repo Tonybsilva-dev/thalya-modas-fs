@@ -135,6 +135,8 @@ export const authOptions: NextAuthOptions = {
             },
           });
 
+          console.log(`OWNER_STORE`, ownerStore)
+
           if (ownerStore) {
             token.storeId = ownerStore.id;
           } else {

@@ -1,40 +1,39 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link"
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
 import { TypewriterEffect } from "@/components/ui/typewriter-effect"
-import Link from "next/link"
-import { z } from "zod";
-import { createUser } from "../actions/register.action";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils/format-date";
 import ErrorMessage from "@/components/ui/error-message";
-import Image from "next/image";
+import { signUpCredentails } from "@/server/(public)/auth/sign-up/action/sign-up.action";
+import { SignUpCredentails, signUpCredentialsZodSchema } from "@/server/(public)/auth/sign-up/validations/sign-up.validation";
+import { AppError } from "@/lib/error";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-const signUpSchema = z.object({
-  name: z.string({ required_error: "Campo obrigatório" }).min(1, { message: "Campo obrigatório" }),
-  email: z.string({ required_error: "Campo obrigatório" }).email({ message: "Email inválido" }),
-  password: z.string({ required_error: "Campo obrigatório" }).min(6, { message: "A senha deve ter pelo menos 6 caracteres" }),
-});
-
-type SignUpFormData = z.infer<typeof signUpSchema>;
-
-
+export type SignUpFormData = Pick<SignUpCredentails, 'name' | 'email' | 'password'>;
 export const SignUnPageInterface = () => {
-
-  const router = useRouter();
+  const isMobile = useIsMobile()
+  const WORDS = [
+    {
+      text: "Cadastre-se",
+      className: "text-red-500 dark:text-red-500 text-2xl",
+    },
+  ];
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<SignUpFormData>({
-    resolver: zodResolver(signUpSchema),
+    mode: 'onChange',
+    resolver: zodResolver(signUpCredentialsZodSchema),
     defaultValues: {
       name: "",
       password: "",
@@ -42,65 +41,54 @@ export const SignUnPageInterface = () => {
     }
   });
 
-  const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
+  const onSubmit = async (data: SignUpFormData) => {
     try {
-      await createUser({
-        name: data.name,
-        email: data.email,
-        password: data.password
-      });
-
+      await signUpCredentails(data)
       toast.success("Usuário criado com sucesso.", {
         description: formatDate(new Date),
       })
-
-      router.push("/")
     } catch (error) {
-      // Tratamento de erro do Zod
-      if (error instanceof z.ZodError) {
-        const formattedErrors = error.errors
-          .map((e) => `${e.path.join(".")}: ${e.message}`)
-          .join(", ");
+      const appError = AppError.from(error);
+      appError.logError();
 
-        toast.warning(`Erros de validação: ${formattedErrors}`);
-      }
-      // Tratamento de erro de e-mail duplicado ou outros erros
-      else if (error instanceof Error) {
-        toast.error(error.message, {
-          description: formatDate(new Date()),
-        });
-      }
-      // Tratamento de outros tipos de erro
-      else {
-        toast.error("Ocorreu um erro inesperado.", {
-          description: formatDate(new Date()),
-        });
-      }
+      toast.error(appError.message, {
+        description: formatDate(new Date()),
+      });
     }
   };
 
-  const words = [
-    {
-      text: "Cadastre-se",
-      className: "text-red-500 dark:text-red-500",
-    },
-  ];
-
   return (
-    <div className="w-full h-screen lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
-      <div className="flex items-center justify-center py-12">
+    <div className="w-full h-screen flex items-center justify-center lg:grid lg:h-screen lg:grid-cols-2">
+      <div className="flex items-center justify-center h-full">
         <form onSubmit={handleSubmit(onSubmit)} className="mx-auto w-[350px] space-y-6">
           <div className="space-y-2 text-center">
-            <TypewriterEffect words={words} />
+            {isMobile ? (
+              <>
+                <div className="mb-8">
+                  <Image
+                    src={"https://fakeimg.pl/600x150"}
+                    className="mx-auto"
+                    width={600}
+                    height={150}
+                    alt="placeholder"
+                  />
+                </div>
+                <Label className=" text-[48px] font-semibold text-red-500">Cadastre-se</Label>
+              </>
+            ) : (
+              <TypewriterEffect words={WORDS} />
+            )}
             <p className="text-muted-foreground">Para acessar a plataforma.</p>
           </div>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome completo</Label>
-              <Input id="name" type="text"
+              <Input
+                id="name"
+                type="text"
                 {...register("name")}
-                aria-invalid={errors.name ? "true" : "false"} />
-              <ErrorMessage error={errors.name} />
+                label="Nome completo"
+                errorMessage={errors.name}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -123,13 +111,14 @@ export const SignUnPageInterface = () => {
                 aria-invalid={errors.password ? "true" : "false"} />
               <ErrorMessage error={errors.password} />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" isLoading={isSubmitting}>
               Cadastrar
             </Button>
           </div>
         </form>
       </div>
-      <div className="hidden bg-muted lg:block">
+
+      <div className="hidden h-full bg-muted lg:block">
         <Image
           src="/signin-background.webp"
           alt="Image"

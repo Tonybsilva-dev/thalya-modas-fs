@@ -1,4 +1,3 @@
-// app/dashboard/settings/components/StoreSettings.tsx
 'use client';
 
 import React, { useRef } from 'react';
@@ -6,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { TitlePage } from "@/components/ui/title-page";
 import { SaveIcon } from "lucide-react";
 import StoreForm, { StoreFormHandle } from './storeForm.component';
-import { StoreFormData } from '../validations/get-store-info.validation';
+import { StoreData } from '../validations/store-form-input-schema.validation';
 
 interface StoreSettingsProps {
-  initialData: StoreFormData | null;
+  initialData: StoreData | null;
 }
 
 const StoreSettings: React.FC<StoreSettingsProps> = ({ initialData }) => {
@@ -33,7 +32,7 @@ const StoreSettings: React.FC<StoreSettingsProps> = ({ initialData }) => {
       </TitlePage>
 
       <main className="flex-1 py-8">
-        <div className="containergrid gap-8 px-4 md:px-6">
+        <div className="container gap-8 px-4 md:px-6">
           <StoreForm ref={formRef} initialData={initialData} />
         </div>
       </main>

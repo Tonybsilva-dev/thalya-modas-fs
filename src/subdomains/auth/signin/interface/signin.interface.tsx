@@ -1,35 +1,37 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import ErrorMessage from "@/components/ui/error-message"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { TypewriterEffect } from "@/components/ui/typewriter-effect"
 import { formatDate } from "@/lib/utils/format-date"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useSession, signIn } from "next-auth/react"
+import { signIn } from "next-auth/react"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { z } from "zod"
-import { signInSchema } from "@/lib/zod"
 import { SignInGoogleButton } from "../components/signin-google-button"
 import Image from "next/image"
 import { useRouter } from 'next/navigation';
+import { AppError } from "@/lib/error"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { Separator } from "@/components/ui/separator"
+import { SignIn, signInZodSchema } from "@/server/(public)/auth/sign-in/validations/sign-in.validation"
 
-type signInFormData = z.infer<typeof signInSchema>
+type signInFormData = SignIn
 
 export const SignInPageInterface = () => {
 
   const router = useRouter()
-  const { data: session } = useSession()
+  const isMobile = useIsMobile()
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<signInFormData>({
-    resolver: zodResolver(signInSchema),
+    mode: 'onChange',
+    resolver: zodResolver(signInZodSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -54,25 +56,16 @@ export const SignInPageInterface = () => {
         router.push('/dashboard');
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        const formattedErrors = error.errors
-          .map((e) => `${e.path.join(".")}: ${e.message}`)
-          .join(", ")
+      const appError = AppError.from(error);
+      appError.logError();
 
-        toast.warning(`Erros de validação: ${formattedErrors}`)
-      } else if (error instanceof Error) {
-        toast.error(error.message, {
-          description: formatDate(new Date()),
-        })
-      } else {
-        toast.error("Ocorreu um erro inesperado.", {
-          description: formatDate(new Date()),
-        })
-      }
+      toast.error(appError.message, {
+        description: formatDate(new Date()),
+      });
     }
   }
 
-  const words = [
+  const WORDS = [
     {
       text: "Acessar",
       className: "text-red-500 dark:text-red-500",
@@ -80,28 +73,43 @@ export const SignInPageInterface = () => {
   ]
 
   return (
-    <div className="w-full h-screen lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
-      <div className="flex items-center justify-center py-12">
+    <div className="w-full h-screen flex items-center justify-center lg:grid lg:h-screen lg:grid-cols-2">
+      <div className="flex items-center justify-center h-full">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="mx-auto w-[350px] space-y-6"
         >
           <div className="space-y-2 text-center">
-            <TypewriterEffect words={words} />
+            {isMobile ? (
+              <>
+                <div className="mb-8">
+                  <Image
+                    src={"https://fakeimg.pl/600x150"}
+                    className="mx-auto"
+                    width={600}
+                    height={150}
+                    alt="placeholder"
+                  />
+                </div>
+                <Label className=" text-[48px] font-semibold text-red-500">Acessar</Label>
+              </>
+            ) : (
+              <TypewriterEffect words={WORDS} />
+            )}
             <p className="text-muted-foreground">
               Entre com sua conta para acessar a plataforma.
             </p>
           </div>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 {...register("email")}
+                label="Email"
+                errorMessage={errors.email}
                 type="email"
                 placeholder="m@example.com"
               />
-              <ErrorMessage error={errors.email} />
             </div>
             <div className="space-y-2">
               <div className="flex items-center">
@@ -118,22 +126,18 @@ export const SignInPageInterface = () => {
                 id="password"
                 {...register("password")}
                 type="password"
+                errorMessage={errors.password}
               />
-              <ErrorMessage error={errors.password} />
             </div>
             <Button type="submit" className="w-full" isLoading={isSubmitting}>
               Entrar
             </Button>
-            <Link href={"/signup"}>
-              <Button type="button" className="w-full mt-4" variant={"ghost"}>
-                Criar uma conta
-              </Button>
-            </Link>
           </div>
+          <Separator />
           <SignInGoogleButton />
         </form>
       </div>
-      <div className="hidden bg-muted lg:block">
+      <div className="hidden h-full bg-muted lg:block">
         <Image
           src="/signin-background.webp"
           alt="Image"

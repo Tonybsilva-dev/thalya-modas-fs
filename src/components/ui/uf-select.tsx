@@ -1,34 +1,27 @@
-'use client'
+'use client';
 
-import * as React from 'react';
+import React from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import { stateBrazil } from '@/lib/utils/state-brazil';
 import Image from 'next/image';
 
-const UfSelect = ({ initialUF }: { initialUF?: string }) => {
+interface UfSelectProps {
+  value: string | undefined;
+  onValueChange: (value: string) => void;
+}
 
+const UfSelect: React.FC<UfSelectProps> = ({ value, onValueChange }) => {
   const [search, setSearch] = React.useState('');
-  const [selectedUF, setSelectedUF] = React.useState<string | undefined>(initialUF);
-
-  React.useEffect(() => {
-    if (initialUF) {
-      setSelectedUF(initialUF);
-    }
-  }, [initialUF]);
 
   const filteredEstados = stateBrazil.filter((estado) =>
     estado.label.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleValueChange = (value: string) => {
-    setSelectedUF(value);
-  };
-
-  const selectedState = stateBrazil.find((estado) => estado.value === selectedUF);
+  const selectedState = stateBrazil.find((estado) => estado.value === value);
 
   return (
-    <SelectPrimitive.Root value={selectedUF} onValueChange={handleValueChange}>
+    <SelectPrimitive.Root value={value} onValueChange={onValueChange}>
       <SelectPrimitive.Trigger className="flex items-center justify-between w-full border rounded-md p-2 text-left text-sm text-gray-500">
         <SelectPrimitive.Value>
           {selectedState ? (
@@ -60,7 +53,6 @@ const UfSelect = ({ initialUF }: { initialUF?: string }) => {
         <SelectPrimitive.Viewport
           style={{ maxHeight: '300px', overflowY: 'auto' }}
           className="border rounded-md shadow-md bg-white p-2">
-          {/* Campo de busca */}
           <input
             type="text"
             placeholder="Buscar estado..."
@@ -73,7 +65,6 @@ const UfSelect = ({ initialUF }: { initialUF?: string }) => {
             <div className="text-center p-2 text-sm text-gray-500">Nenhum estado encontrado.</div>
           )}
 
-          {/* Lista de estados filtrados */}
           {filteredEstados.map((estado) => (
             <SelectPrimitive.Item
               key={estado.value}
@@ -97,7 +88,6 @@ const UfSelect = ({ initialUF }: { initialUF?: string }) => {
                 <Check className="w-4 h-4" />
               </SelectPrimitive.ItemIndicator>
             </SelectPrimitive.Item>
-
           ))}
         </SelectPrimitive.Viewport>
         <SelectPrimitive.ScrollDownButton />

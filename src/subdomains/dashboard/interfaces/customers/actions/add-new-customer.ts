@@ -11,17 +11,33 @@ interface NewCustomerData {
 }
 
 export const createCustomer = async (data: NewCustomerData) => {
-  const customer = await db.customer.create({
-    data: {
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      storeId: data.storeId,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-  });
-  return customer;
+  console.log('DATA: ', data)
+  try {
+    const store = await db.store.findUnique({
+      where: {
+        id: data.storeId
+      }
+    })
+
+    if (!store) {
+      throw new Error('Loja não encontrada ou cadastrada.')
+    }
+
+    const customer = await db.customer.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        storeId: data.storeId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+    });
+    return customer;
+  } catch (error) {
+    throw error
+  }
+
 };
 
 revalidatePath('/')
